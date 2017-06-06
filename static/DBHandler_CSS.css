@@ -1,0 +1,27 @@
+/*
+Coded by : Pranav Sharan
+Purpose  : CSS file for styling elements in CentralPage.html
+*/
+
+.space-in-nav
+{
+    padding-left:  50px;
+}
+
+.background-gray
+{
+background-color: #228B22;
+padding-left: 10px;
+    padding-right: 10px;
+}
+
+.background-pink
+{
+    background-color: #708090;
+    overflow:hidden;
+}
+
+.font-label
+{
+    font-size: 20px;
+}

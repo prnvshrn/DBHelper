@@ -1,0 +1,365 @@
+<!--
+Coded by : Pranav Sharan
+Purpose  : The front end for DB Helper. Makes calls to DBHelper_Handler.py if required
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/DBHandler_CSS.css">
+    <title>DB Helper - Database Management tool for PostgreSQL</title>
+
+<script type="text/javascript">
+var count=1;
+
+function deleteTable()
+{
+
+    document.getElementById('DeleteTable').value = "YES";
+    alert(document.getElementById('getTableName').value + "has been deleted from the database");
+}
+
+    function getTableName(str)
+{
+    try{
+    document.getElementById('getTableName').value = str;
+
+    var button = document.getElementById('SubmitButton');
+    button.click();}
+    catch(err)
+    {alert(err.message);}
+}
+
+function setModalInformation()
+{
+    try
+    {
+        var count = document.getElementById("tableData").length;
+
+        for(var i=0;i<count;i++)
+        {
+        var div = document.createElement('ColumnArea');
+        div.innerHTML='<center><label id="label'+i+'"></label><input type="text" id="textbox'+i+'" maxlength="20" style="width:200px;"><label id="data_type'+i+'"></label></center><br>';
+        document.getElementById('EntryModalBody').appendChild(div);
+        document.getElementById('label'+i).innerHTML=document.getElementById("tableData")[i].value+": ";
+        document.getElementById('data_type'+i).innerHTML=document.getElementById("columnDataType")[i].value;
+
+        }
+    }
+    catch(err)
+    {
+        alert(err.message);
+    }
+
+}
+
+
+    function AddElements()
+    {
+        count++;
+        var div = document.createElement('div');
+        div.innerHTML='<label for="ColumnName'+count+'">Column Name:</label><input type="text" id="ColumnName'+count+'" maxlength="20" style="width:200px;"><label for="ColumnType'+count+'" >Column Type:</label><select id="ColumnType'+count+'"  style="font-size: 16px"><option>Text</option><option>Integer</option></select><button type="button" style="width:40px;" onclick="AddElements()">+</button><button type="button" style="width:40px;" onclick="RemoveElements(this)">-</button>';
+        document.getElementById('column_section').appendChild(div);
+    }
+
+    function RemoveElements(div)
+    {
+        document.getElementById('column_section').removeChild(div.parentNode);
+        count--;
+    }
+
+    function AddColumns()
+    {
+        var column_array = [];
+        var column_type = [];
+        for(var i=1;i<=count;i++)
+        {
+            column_array.push(document.getElementById('ColumnName'+i).value);
+
+            var e = document.getElementById('ColumnType'+i);
+            var strUser = e.options[e.selectedIndex].value;
+            column_type.push(strUser);
+
+        }
+
+        var finalquery = "CREATE TABLE IF NOT EXISTS "+document.getElementById('TableName').value + "(";
+var arrayLength = column_array.length;
+for (var i = 0; i < arrayLength; i++) {
+    if(i!=0)
+    {
+        finalquery = finalquery + ","
+    }
+    finalquery=finalquery+(column_array[i]+ " " +column_type[i]);
+}
+finalquery=finalquery+(");");
+document.getElementById('SendToPython').value = finalquery;
+alert("Table "+document.getElementById('TableName').value+" has been created successfully");
+
+    }
+
+    function generateQuery()
+        {
+            //Start of function
+
+            try {
+
+                var query = "INSERT INTO " + document.getElementById("label_tablename").textContent + " VALUES(";
+                var count = document.getElementById("columnDataType").length;
+
+                for (var i = 0; i < count; i++) {
+
+
+                    if (i != 0) {
+                        //var str1 = document.getElementById("columns_type")[i].value;
+                        if (document.getElementById("columnDataType")[i].value.localeCompare("text") == 0) {
+                            query = query + ", '" + document.getElementById("textbox" + i).value + "'";
+                        }
+                        else {
+                            query = query + ", " + document.getElementById("textbox" + i).value + "";
+                        }
+                    }
+                    else {
+                        if (document.getElementById("columnDataType")[i].value.localeCompare("text") == 0) {
+                            query = query + " '" + document.getElementById("textbox" + i).value + "'";
+                        }
+                        else {
+                            query = query + " " + document.getElementById("textbox" + i).value + "";
+                        }
+                    }
+                }
+                query = query + ");"
+                document.getElementById("InsertTableQuery").value = query;
+                document.getElementById("InsertTable").value = "Yes";
+            }catch(err){alert(err.message);}
+        //end of function
+        }
+
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+
+
+
+<body class="background-gray">
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Database Helper</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li class="space-in-nav"><a href="#AboutModal" data-toggle="modal" data-target="#AboutModal">About</a></li>
+            <li ><a href="#HelpModal" data-toggle="modal" data-target="#HelpModal">Help</a></li>
+        </ul>
+    </div>
+    </nav>
+
+
+
+<div class="row">
+    <div class="col-sm-4">
+        <table class="table table-hover" id="table_tablenames" style="height:100px;overflow:auto;">
+        <div class="background-pink">
+
+                <form action="{{url_for('getTableSchema')}}" method="POST" id="FormPython"><label class="font-label">Tables</label>
+                    <input type="text" name="getTableName" id="getTableName" value="{{table_name}}" style="display:none;">
+                <button type="submit" onclick="deleteTable()" class="btn btn-warning center-align" style="float:right;">Delete Table</button>
+                <button type="submit" class="btn btn-success" id="SubmitButton" style="display:none;" >Create Table</button>
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" style="float:right;">Create Table</button>
+                </form></center>
+        </div>
+            {% for item in table_names %}
+            <tr class="warning">
+            <td onclick="getTableName('{{item}}')" id={{item}}>
+                    {{item}}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+
+    <div class="col-sm-8">
+        <table class="table table-hover" id="table_tabledata">
+
+        <div class="background-pink">
+            <center><label id="label_tablename" class="font-label">{{table_name}}</label>
+                <button type="submit" onclick="setModalInformation()" class="btn btn-success" style="float:right;" data-toggle="modal" data-target="#EntryModal">Create Entry</button></center>
+        </div>
+
+
+        <tr class="warning">
+            {% for item in table_data %}
+            <td>
+                    {{item}}
+            </td>
+            {% endfor %}
+        </tr>
+
+            {% for row in table_meta %}
+    <tr class="success">
+    {% for d in row %}
+        <td>{{ d }}</td>
+    {% endfor %}
+    </tr>
+{% endfor %}
+        </table>
+    </div>
+
+</div>
+
+
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="ModalHeader">Create Table</h4>
+        </div>
+        <div class="modal-body">
+          <div id="column_section" >
+              <label for="TableName">Table Name:</label>
+        <input type="text" id="TableName" class="center-align" maxlength="20" style="width:200px;"><br>
+        <label for="ColumnName1">Column Name:</label>
+        <input type="text" id="ColumnName1" maxlength="20" style="width:200px;">
+        <label for="ColumnType1" >Column Type:</label>
+        <select id="ColumnType1"  style="font-size: 16px">
+        <option>Text</option><option>Integer</option></select>
+        <button type="button" style="width:40px;" onclick="AddElements()">+</button>
+        <button type="button" style="width:40px;" onclick="RemoveElements(this)">-</button>
+        </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" value="Send1" class="btn btn-success center-align" onclick="AddColumns()" form="FormPython">Create</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <input type="text" name="GetQuery" id="SendToPython" style="display: none" form="FormPython">
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<input type="text" name="DeleteTable" id="DeleteTable" form="FormPython"   style="display:none;" value="NO">
+
+<div class="modal fade" id="EntryModal" role="dialog">
+<div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+    <h2>Insert into {{table_name}} table</h2>
+    </div>
+    <div class="modal-body" id="EntryModalBody">
+    </div>
+    <div class="modal-footer">
+    <button type="submit" value="Send1" class="btn btn-success" onclick="generateQuery()" form="FormPython">Create</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    </div>
+    </div>
+</div>
+</div>
+
+<select name="tableData" id="tableData" style="display: none;">
+     {% for item in table_data %}
+                <option>
+                    {{item}}
+                </option>
+                {% endfor %}
+</select>
+
+<select name="columnDataType" id="columnDataType" style="display:none;">
+     {% for item in column_datatype %}
+                <option>
+                    {{item}}
+                </option>
+                {% endfor %}
+</select>
+
+<input type="text" id="InsertTable" name="InsertTable" value="No" form="FormPython" style="display:none;">
+<input type="text" id="InsertTableQuery" name="InsertTableQuery" form="FormPython" style="display:none;">
+
+<!-- About Section -->
+<div class="modal fade" id="AboutModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color:slategrey;">About</h3>
+            </div>
+            <div class="modal-body">
+                <h4>
+                    Database Helper is a simple user interface tool used to create tables and their entries for your database. <br>
+                    </h4>
+            </div>
+            <div class="modal-footer">
+                <h4>Developed by Pranav Sharan (www.prnvshrn@gmail.com)</h4> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="HelpModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Help</h2>
+            </div>
+            <div class="modal-body">
+
+                <h4>General Layout:</h4>
+                The left hand side of the screen contains the tables section which contains all
+                the tables found in the database. The right hand side of the screen displays data
+                of a table that you have clicked from the tables section.
+
+                <h4>Create Table:</h4>
+                <ol>
+                    <li>
+                        In the tables section located at the left hand side of the screen, click on 'Create Table'
+                    </li>
+                    <li>
+                        In the ensuing window, type the table name. Columns can be added using the '+' button and removed using '-' button
+                    </li>
+                    <li>
+                        Click on 'Create' button
+                    </li>
+                </ol>
+
+                <h4>Delete Table:</h4>
+                <ol>
+                    <li>
+                        In the tables section located at the left hand side of the screen, click on a table name
+                    </li>
+                    <li>
+                        Then click on 'Delete Table' to delete it
+                    </li>
+                </ol>
+
+                <h4>Create Entry:</h4>
+                <ol>
+                    <li>
+                        In the tables section located at the left hand side of the screen, click on the desired table name
+                    </li>
+                    <li>
+                        On the right hand side of the screen, click on 'Create Entry'
+                    </li>
+                    <li>
+                        In the ensuing window, enter the desired information and click 'Create' button
+                    </li>
+                </ol>
+
+            </div>
+            <div class="modal-footer">
+                <button data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>
