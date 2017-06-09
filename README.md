@@ -14,3 +14,8 @@ Databases :- PostgreSQL<br/>
 Add the username and password of your PostgreSQL database in the credentials.txt file. It should look like the following:-<br/>
 username:xyz<br/>
 password:abc
+
+## Screenshots
+![alt text](/screenshot1.jpg)
+![alt text](/screenshot2.jpg)
+![alt text](/screenshot3.jpg)
