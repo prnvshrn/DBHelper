@@ -16,7 +16,7 @@ username:xyz<br/>
 password:abc
 
 ## Demo
-![alt text](/demo.wmv)
+![alt text](/demo.gif)
 
 ## Screenshots
 ![alt text](/screenshot1.jpg)
